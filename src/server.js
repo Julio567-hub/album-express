@@ -13,16 +13,16 @@ const fotos = [
     }
 ];
 
-app.get('/api/fotos', (req,res) => {
-    res.json(fotos);
-});
-
 app.use(express.json());
 
 app.use((req, res, next) => {
     const hora = new Date().toISOString();
     console.log(`[${hora}] ${req.method} ${req.url}`);
     next();
+});
+
+app.get('/api/fotos', (req,res) => {
+    res.json(fotos);
 });
 
 app.get('/api/fotos/:id', (req, res) => {
@@ -48,6 +48,38 @@ app.post('/api/fotos', (req, res) => {
     };
     fotos.push(nueva);
     res.status(201).json(nueva);
+});
+
+app.patch('/api/fotos/:id', (req, res) => {
+    const id = Number(req.params.id);
+    const indice = fotos.findIndex((f) => f.id === id);
+
+    if (indice === -1) {
+        return res.status(404).json({ mensaje: `Foto ${id} no encontrada` });
+    }
+
+    const fotoActualizada = {
+        ...fotos[indice],
+        ...req.body,
+        id: id
+    };
+
+    fotos[indice] = fotoActualizada;
+
+    res.json(fotoActualizada);
+});
+
+app.delete('/api/fotos/:id', (req, res) => {
+    const id = Number(req.params.id);
+    const indice = fotos.findIndex((f) => f.id === id);
+
+    if (indice === -1) {
+        return res.status(404).json({ mensaje: `Foto ${id} no encontrada` });
+    }
+
+    fotos.splice(indice, 1);
+
+    res.status(204).end();
 });
 
 app.get('/api/error', async () => {
